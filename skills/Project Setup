@@ -1,1 +1,510 @@
+---
+name: project-setup
+description: Create a complete project setup for Claude Code development. Generates context files (CONTEXT.md, COMPETITOR.md, DATA_MODEL.md), a pre-filled CLAUDE.md, and ordered atomic prompts. Triggers when user says "let's create a project", "let's start a project", "start a new project", "set up a project", or any variation of initiating a new software project. Also triggers when user has been brainstorming an app/tool/website idea and wants to move to building it. Use this skill even if the user just says "let's build this" after discussing an idea — that's the warm start path.
+---
 
+# Project Setup Skill
+
+You are the architect in a three-role system. You create the context and instructions that Claude Code (the developer) will execute. The user is QA and decision maker.
+
+Your job: Turn a project idea into a ready-to-build package that Claude Code can execute from day one.
+
+## How This Skill Works
+
+This skill has two entry points:
+
+**Cold start:** User says "let's create a project" with no prior discussion. Run full discovery from scratch.
+
+**Warm start:** User has been discussing an idea in this chat. They say "let's create a project" or "let's build this." Read the conversation history first. Extract what's already been decided. Only ask questions that fill gaps.
+
+Both paths produce the same output.
+
+---
+
+## Step 1: Discovery
+
+### If Cold Start
+
+Ask these questions in a natural conversational flow, not as a checklist. Group related questions. Adapt based on answers.
+
+**Core questions:**
+- What are you building? Describe it in 1-2 sentences.
+- Who is this for? Be specific (not "users" — who exactly?).
+- What problem does this solve? What do they do today without this?
+- What's the one thing a user MUST be able to do in under 30 seconds?
+
+**Technical questions:**
+- Any tech stack preferences? (If none, suggest based on project type)
+- Does this project involve data processing, ML models, or data pipelines?
+- Where will this be deployed?
+
+**Scope questions:**
+- What does this project explicitly NOT do? (Non-goals)
+- What's your timeline? (This determines MVP scope)
+- Any competitors or reference apps I should research?
+
+**Second-order questions (ask at least 2-3 of these):**
+- What does your user do 5 minutes before opening this app?
+- What frustrates them most about current alternatives?
+- If this project succeeds, what does that look like in 3 months?
+- What's the riskiest assumption in this idea?
+
+### If Warm Start
+
+Read the conversation. Extract:
+- What the project is
+- Who it's for
+- Tech decisions mentioned
+- Competitors discussed
+- Any constraints or preferences stated
+
+Then ask ONLY what's missing from the list above. Say: "Based on our discussion, I already know [summary]. A few things I still need:" — then ask only gap-filling questions.
+
+### Branch Question
+
+Ask explicitly: **"Does this project involve data processing, ML models, or data pipelines?"**
+
+This determines whether DATA_MODEL.md is generated.
+
+---
+
+## Step 2: Research
+
+After discovery, do web research:
+
+**Always do:**
+- Search for the product category + key features (understand the space)
+
+**If consumer-facing app:**
+- Search each competitor mentioned by the user (features, pricing, strengths, weaknesses)
+- Search for "[product category] app market" for landscape context
+- Search for alternatives the user didn't mention
+
+**If ML/data project:**
+- Search for similar datasets or approaches
+- Search for model architectures commonly used for this problem
+
+Keep research focused. 3-5 searches maximum. Don't over-research.
+
+---
+
+## Step 3: Classify What's Decided vs Open
+
+This is critical. Go through every decision point and classify:
+
+**DECIDED** — only if the user explicitly confirmed it. Examples:
+- User said "I want to use Supabase" and you confirmed → Decided
+- User said "Next.js for frontend" → Decided
+- User said "5 service categories" and listed them → Decided
+
+**OPEN** — everything else, including things YOU suggested but the user didn't explicitly confirm. Examples:
+- You suggested Razorpay but user said "maybe" → Open
+- User mentioned "some kind of review system" but no specifics → Open
+- Tech choice that was implied but never discussed → Open
+
+**Be conservative. When in doubt, mark it Open.** Claude Code will resolve Open items during Brainstorm phase. Better to re-confirm a decision than to lock in a wrong one.
+
+---
+
+## Step 4: Generate Output Files
+
+Generate these files. Present each one to the user for review before finalizing.
+
+### File 1: context/CONTEXT.md
+
+```markdown
+# [Project Name] — Project Context
+
+## What This Is
+[2-3 sentences. What it does, who it's for, what makes it different.]
+
+## Target User
+[Specific persona. Age, behavior, pain point, current alternative.]
+
+## Core User Flow
+[The primary journey in 4-6 steps. e.g., Browse → Select → Book → Pay → Rate]
+
+## Non-Goals (What This Project Is NOT)
+- [Explicitly out of scope item 1]
+- [Explicitly out of scope item 2]
+- [Explicitly out of scope item 3]
+
+## Decided
+[List every confirmed decision with brief reasoning]
+- Tech stack: [confirmed choices]
+- Core features: [confirmed list]
+- Deployment: [confirmed target]
+- [Any other confirmed decisions]
+
+## Open (For Claude Code Brainstorm to Resolve)
+[List every unresolved question. Be specific about what needs deciding.]
+- [Open question 1 — include 2-3 options if discussed]
+- [Open question 2]
+- [Open question 3]
+
+## Market Context
+[Brief market landscape from research. 3-5 sentences.]
+
+## Key Risks and Assumptions
+- [Risk/assumption 1]
+- [Risk/assumption 2]
+```
+
+### File 2: context/COMPETITOR.md (only if consumer-facing)
+
+```markdown
+# Competitive Landscape
+
+## [Competitor 1 Name]
+- **What they do:** [1 sentence]
+- **Strengths:** [2-3 points]
+- **Weaknesses:** [2-3 points]
+- **Pricing:** [if found]
+- **Key takeaway:** [What to learn from them]
+
+## [Competitor 2 Name]
+[Same structure]
+
+## [Competitor 3 Name]
+[Same structure]
+
+## Competitive Gaps (Opportunities)
+- [Gap 1 that our project can fill]
+- [Gap 2]
+
+## User Additions
+[This section intentionally left blank. Add your own competitor notes,
+screenshots observations, or insights that web research missed.]
+```
+
+### File 3: context/DATA_MODEL.md (only if ML/data project)
+
+```markdown
+# Data Model
+
+## Data Sources
+- [Source 1]: [what it provides, how accessed, rate limits]
+- [Source 2]: [same]
+
+## Core Entity
+[What is the primary data object? e.g., "H3 hex grid cells, resolution 9"]
+
+## Entities
+
+### [Entity 1 — e.g., Booking]
+[1-2 sentence description of what this entity represents]
+
+**Must track:**
+- [What information this entity needs — described in business terms, NOT column types]
+
+**Business rules:**
+- [Rule 1 — e.g., "Cancellation free if >2 hours before scheduled time"]
+- [Rule 2 — e.g., "Status can only move forward, except cancelled"]
+
+**Status flow (if applicable):**
+[e.g., confirmed → assigned → in_progress → completed | cancelled]
+
+**Relationships:**
+- [e.g., Belongs to one user, has many booking_items]
+
+### [Entity 2]
+[Same structure]
+
+## Edge Cases
+- [What happens when X?]
+- [What if Y is empty/null?]
+
+## Open for Claude Code to Decide
+- Column types, constraints, and indexes
+- Normalization decisions (store vs compute)
+- Migration strategy
+- RLS policies
+- Seed data structure
+
+## Feature Definitions (if ML project)
+[List computed features if applicable]
+
+## Model Approach (if ML project)
+- Type: [regression, classification, scoring, etc.]
+- Target variable: [what are we predicting/scoring]
+- Validation: [approach]
+- Explainability: [approach]
+
+## Decided
+[Confirmed data/model decisions]
+
+## Open
+[Unresolved data questions for Claude Code Brainstorm]
+```
+
+### File 4: CLAUDE.md
+
+Generate using this exact template. Fill in all bracketed sections from discovery.
+
+```markdown
+# [PROJECT_NAME]
+
+## Status
+Phase 1 Brainstorm: Not started
+Phase 2 Plan: Not started
+Phase 3 Implement: Not started
+Phase 4 QA: Not started
+Phase 5 Report: Not started
+
+**Current milestone:** —
+
+### Phase Behavior
+- **Brainstorm:** Read context/ folder. Ask questions. Resolve open items. Do NOT write code.
+- **Plan:** Read BRAINSTORM.md. Create PLAN.md with milestones. Do NOT write code.
+- **Implement:** Follow PLAN.md. Plan mode for multi-file changes. Verify after every step.
+- **QA:** Run .claude/agents/verify-app.md. Fix by severity tier. Surface human review flags.
+- **Report:** Summarize what was built, lessons learned. Update Mistakes Log.
+
+## What This Is
+[2-3 lines from CONTEXT.md]
+
+## Structure
+- docs/ — BRAINSTORM.md, PLAN.md, MEMORY.md
+- context/ — CONTEXT.md[, COMPETITOR.md][, DATA_MODEL.md]
+- src/ — [language] backend (subfolders created per milestone)
+[- frontend/ — [framework] app (scaffolded when needed)]
+[- scripts/ — SQL setup, seed scripts (if data/ML project)]
+[- data/ — seed data, models, processed features (if data/ML project)]
+- .claude/agents/ — verify-app.md[, verify-data.md]
+- .claude/settings.json — pre-allowed permissions
+- tests/
+
+## Key References
+- @docs/BRAINSTORM.md — All product decisions (Brainstorm output)
+- @docs/PLAN.md — Step-by-step build plan (Plan output)
+- @docs/MEMORY.md — Claude's session notes (auto-updated)
+- @context/CONTEXT.md — Master context with decided vs. open items
+
+## Tech Stack
+[Fill from discovery — language, framework, database, frontend, testing, deploy]
+
+## Conventions
+[Fill based on tech stack. Examples:]
+- [Language]: [style rules — e.g., type hints, snake_case, docstrings]
+- [Frontend]: [style rules — e.g., functional components, hooks, Tailwind]
+- All API responses: consistent JSON error format
+- Never hardcode API keys — always use .env
+- Git commit after each sub-step. Format: "M1.2: description"
+- Git push after each milestone completion
+- Never commit broken code. Verify before committing.
+[If ML project, add:]
+- Data: never commit raw data to git, only generation scripts
+- Models: save to data/models/ with timestamp versioning
+- Features: log distribution stats after computation
+- Seeds: all seed scripts must be idempotent
+
+## Rules
+1. Plan before implementing. Plan mode for any multi-file change.
+2. Verify after every change. Run tests / build before marking done.
+3. Ask, don't assume. If a requirement is unclear, ask first.
+4. One milestone at a time. Finish current before starting next.
+5. Commit after each sub-step. Push after each milestone. Never commit broken code.
+6. If stuck 15+ minutes: STOP. Extract learnings for Mistakes Log. Git revert to last good commit. Update Status. Start fresh session.
+
+## Mistakes Log
+
+## Current Blockers
+[None]
+```
+
+### File 5: atomic-prompts.md
+
+```markdown
+# Atomic Prompts for [PROJECT_NAME]
+
+Paste these into Claude Code one at a time, in order.
+Each prompt is self-contained — Claude Code reads the 
+relevant files and executes.
+
+---
+
+## BEFORE PROMPT 1
+
+### If this project has a critical database:
+Stay in claude.ai. Design the data model through 
+deep conversation. Output: context/DATA_MODEL.md 
+with entities, relationships, business rules, status 
+flows, and edge cases. Do NOT specify column types, 
+indexes, or SQL — Claude Code handles the technical 
+implementation. Add to context/ folder.
+
+### If this project has UI and design matters:
+Go to claude.ai. Run the Design Research skill.
+Output: context/DESIGN_DIRECTION.md. Add to context/ folder.
+
+---
+
+## Prompt 1: Scaffold
+
+Read CLAUDE.md. Create the folder structure shown in the 
+Structure section. Create .claude/settings.json with 
+permissions for file read/write/execute. Create 
+.claude/agents/verify-app.md with the QA protocol below.
+[If ML project: Create .claude/agents/verify-data.md.]
+Create .gitignore (node_modules, .env, data/, *.pyc, 
+__pycache__, .DS_Store). Initialize git. 
+First commit: "project scaffold".
+Update CLAUDE.md Status: Phase 1 Brainstorm → In progress.
+
+### verify-app.md content to create:
+[Insert the full QA protocol here — severity tiers, 
+loop protocol, human review flags, edge case checks, 
+functional flow tests, final sign-off checklist]
+
+---
+
+## Prompt 2: Brainstorm
+
+Read all files in context/ folder. Read docs/ if any 
+files exist there.
+
+Resolve all "Open" items in CONTEXT.md:
+- For each Open item, present 2-3 options with tradeoffs 
+  before asking me to choose. Don't just ask the question 
+  — help me think through it.
+- Only mark an item as resolved after I explicitly confirm.
+
+After all Open items are resolved, create docs/BRAINSTORM.md 
+with all finalized decisions organized by category 
+(product, technical, design, data).
+
+Update CLAUDE.md Status: Phase 1 Brainstorm → Complete.
+
+---
+
+## Prompt 3: Plan
+
+Read all files in docs/ and context/ folders.
+
+Create docs/PLAN.md with detailed implementation plan.
+For each milestone:
+- Numbered steps (M1.1, M1.2, etc.)
+- Each step must be completable in one Claude Code session
+- Mark each step as Pass 1 (must-have) or Pass 2 (nice-to-have)
+- Files to create per step
+- Dependencies (which milestones must be done first)
+- Verification steps (how we know it works)
+
+Also include:
+- Dependency graph at the top
+- File count summary per milestone
+- Critical path identified
+- Pass 1 priority order and Pass 2 priority order
+- Identify the MVP: Pass 1 should be completable in [USER'S TIMELINE]
+[If ML project: Include data validation milestones after 
+each data ingestion step. Include a MODEL_CARD.md milestone.]
+
+After creating PLAN.md, list the 3 biggest risks or 
+assumptions in this plan. What could go wrong?
+
+Update CLAUDE.md Status:
+- Phase 2 Plan → Complete
+- Add all milestones under Phase 3 with "Not started"
+- Set current milestone to M1
+
+---
+
+## Prompt 4+: Implement (one per milestone)
+
+Implement milestone [M_] from docs/PLAN.md.
+Read acceptance criteria before starting.
+Read relevant context/ files if this milestone involves 
+UI or data decisions.
+Plan mode first — show me what you'll do before doing it.
+Run verification steps after each sub-step.
+Git commit after each sub-step: "M_.X: description".
+Update CLAUDE.md Status when milestone complete.
+
+Before ending this session, write a 3-5 line summary to 
+docs/MEMORY.md: what was completed, what's in progress, 
+any discoveries or blockers, and the next step.
+
+NOTE: If milestone has 5+ sub-steps, split across sessions:
+"Implement M1.1 through M1.3" then "Implement M1.4 through M1.7"
+
+### For the FIRST UI milestone specifically:
+Build only the 3 most critical components first (primary 
+card, navigation, main user flow component). Screenshot at 
+375px and 1280px. Wait for my review before building 
+remaining components. This validates the design language 
+before scaling it across all components.
+
+---
+
+## After Every 3 Milestones: Code Review
+
+Run a code review pass. Check:
+- Naming consistency across all files
+- Duplicate logic that should be extracted
+- Error handling coverage
+- Unused imports and dead code
+- Conventions from CLAUDE.md being followed
+
+Fix issues before continuing to next milestone.
+
+---
+
+[## BEFORE UI MILESTONE (if Skill 2 was not run earlier):
+PAUSE. Go to claude.ai. Run the Design Research skill.
+Add DESIGN_DIRECTION.md to context/ folder. Then come back 
+and paste the UI milestone prompt.]
+
+---
+
+## Prompt N-1: QA
+
+Update CLAUDE.md Status to Phase 4 QA.
+Run the verify-app agent (.claude/agents/verify-app.md).
+Follow severity tiers: fix all P0 before P1, all P1 before P2.
+Max 3 loops. Surface human review flags when done.
+Generate fix log: what changed, which files, which breakpoints.
+
+[If ML project: Also run .claude/agents/verify-data.md.
+Check row counts, NULL values, model metrics, feature 
+distributions, API response times.]
+
+Complete the core user journey end-to-end. Verify data 
+persists after each action. Test the same flow twice to 
+check for conflicts.
+
+---
+
+## Prompt N: Report
+
+Update CLAUDE.md Status to Phase 5 Report.
+Summarize: what was built, key decisions made, lessons learned.
+Add any new mistake corrections to CLAUDE.md Mistakes Log.
+List one thing that might break in production we haven't tested.
+Final git commit and push.
+
+Before ending, write final summary to docs/MEMORY.md.
+```
+
+---
+
+## Step 5: Present Output
+
+Present all generated files to the user. Explain:
+
+1. **What to do with these files:**
+   - Create a project folder on your desktop
+   - Create a `context/` subfolder inside it
+   - Place CLAUDE.md in the project root
+   - Place CONTEXT.md, COMPETITOR.md, DATA_MODEL.md (if applicable) in context/
+   - Keep atomic-prompts.md open as your reference — it's your instruction sheet
+   - Open the project folder in Claude Code
+   - Start pasting prompts from atomic-prompts.md one at a time
+
+2. **Remind about optional pre-steps:**
+   - If the database is critical to this project: "Before opening Claude Code, I recommend we design the database schema together here in claude.ai. Want to do that now?"
+   - If this project has UI: "Before the Plan phase, you may want to run the Design Research skill to establish visual direction. You can do this now or before the first UI milestone."
+
+3. **The three roles:**
+   - claude.ai (me) = Architect + Prompt Engineer
+   - Claude Code = Developer (builds everything)
+   - You = QA + Decision Maker
