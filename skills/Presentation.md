@@ -3,7 +3,8 @@ name: pro-presentations
 description: Elevate all presentations with action titles, clear storytelling, smart layouts, and professional structure. Auto-detects presentation type and adapts accordingly.
 ---
 
-# Pro Presentations Skill
+# Pro Presentations Skill - V2
+This is the updated version of this skill.
 
 ## How This Skill Works
 
