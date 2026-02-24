@@ -353,9 +353,10 @@ First commit: "project scaffold".
 Update CLAUDE.md Status: Phase 1 Brainstorm → In progress.
 
 ### verify-app.md content to create:
-[Insert the full QA protocol here — severity tiers, 
-loop protocol, human review flags, edge case checks, 
-functional flow tests, final sign-off checklist]
+Read the file at references/verify-app.md (bundled with this skill) and embed its FULL content here. Claude Code will use this to create the .claude/agents/verify-app.md file. Do not summarize or abbreviate — include the entire protocol with all severity tiers, loop protocol, human review flags, edge case checks, performance section, functional flow tests, and final sign-off checklist.
+
+### verify-data.md content to create (ML/data projects only):
+Read the file at references/verify-data.md (bundled with this skill) and embed its FULL content here. Claude Code will use this to create the .claude/agents/verify-data.md file. Include the entire data validation protocol.
 
 ---
 
