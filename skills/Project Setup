@@ -305,6 +305,7 @@ Phase 5 Report: Not started
 4. One milestone at a time. Finish current before starting next.
 5. Commit after each sub-step. Push after each milestone. Never commit broken code.
 6. If stuck 15+ minutes: STOP. Extract learnings for Mistakes Log. Git revert to last good commit. Update Status. Start fresh session.
+7. If context is getting long: finish current sub-step, write summary to MEMORY.md, git commit, then tell user to start a fresh session. Don't push to the limit — switch early.
 
 ## Mistakes Log
 
