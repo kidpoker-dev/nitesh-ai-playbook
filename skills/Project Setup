@@ -400,9 +400,17 @@ Resolve all "Open" items in CONTEXT.md:
   — help me think through it.
 - Only mark an item as resolved after I explicitly confirm.
 
-After all Open items are resolved, create docs/BRAINSTORM.md 
-with all finalized decisions organized by category 
-(product, technical, design, data).
+After resolving all Open items, do a blind spot check:
+Surface concerns, tradeoffs, or edge cases that 
+AREN'T in the Open list but could matter. Think about: 
+technical risks, UX friction points, data edge cases, 
+third-party dependencies, and assumptions that haven't 
+been validated. Present each as a question with your 
+recommended approach.
+
+After all Open items are resolved and blind spots addressed, 
+create docs/BRAINSTORM.md with all finalized decisions 
+organized by category (product, technical, design, data).
 
 Update CLAUDE.md:
 - Status: Phase 1 Brainstorm → Complete
