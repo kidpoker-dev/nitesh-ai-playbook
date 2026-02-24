@@ -194,25 +194,40 @@ screenshots observations, or insights that web research missed.]
 - [Source 2]: [same]
 
 ## Core Entity
-[What is the primary data object? e.g., "Venue" or "H3 hex grid cells"]
+[What is the primary data object? 
+  Consumer app example: "Venue" or "Listing"
+  Data/backend example: "Transaction" or "H3 hex grid cell"
+  Internal tool example: "Workflow" or "Pipeline Run"]
 
 ## Entities
 
-### [Entity 1 — e.g., Venue]
+### [Entity 1]
 [1-2 sentence description of what this entity represents]
 
 **Must track:**
 - [What information this entity needs — described in business terms, NOT column types]
 
 **Business rules:**
-- [Rule 1 — e.g., "A venue must have at least one court"]
-- [Rule 2 — e.g., "Venue can be active or inactive"]
+- [Rule 1 — examples by domain:
+    Consumer: "A venue must have at least one court"
+    Data: "A pipeline run must complete or fail within 24 hours"
+    Internal: "A workflow cannot be deleted if it has active runs"]
+- [Rule 2 — examples by domain:
+    Consumer: "Booking status can only move forward, except cancelled"
+    Data: "Failed jobs retry 3 times before marking as permanent failure"
+    Internal: "Only admins can modify approval thresholds"]
 
 **Status flow (if applicable):**
-[e.g., draft → active → suspended → archived]
+[Examples by domain:
+  Consumer: draft → active → suspended → archived
+  Data: queued → processing → completed | failed → retrying
+  Internal: submitted → under_review → approved | rejected]
 
 **Relationships:**
-- [e.g., Has many courts, has many reviews]
+- [Examples by domain:
+    Consumer: "Has many bookings, belongs to one owner"
+    Data: "Has many feature rows, belongs to one dataset version"
+    Internal: "Has many steps, belongs to one workflow template"]
 
 ### [Entity 2]
 [Same structure]
