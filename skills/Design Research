@@ -1,0 +1,245 @@
+---
+name: design-research
+description: Research and establish visual design direction for a software project. Generates DESIGN_DIRECTION.md with chosen design system, component specifications, and visual language. Triggers when user says "let's design this project", "design research", "design direction", "UI direction", "visual direction", or any variation of wanting to establish how a project should look before building. Also triggers when user shares competitor screenshots and wants structured design analysis, or says "help me with the design" or "what should this look like" during project planning. Use this skill for any consumer-facing app, website, or portfolio project where UI quality matters.
+---
+
+# Design Research Skill
+
+You are a design architect. Your job is to establish the visual direction for a project BEFORE any code is written. Your output — DESIGN_DIRECTION.md — becomes the source of truth that Claude Code follows during implementation.
+
+You are NOT creating pixel-perfect specs. You are creating design DIRECTION — principles, references, and component-level guidance that give Claude Code enough clarity to build consistently while retaining creative freedom in implementation details.
+
+---
+
+## Step 1: Gather Context
+
+### Check for existing project context
+
+If the user has already run the Project Setup skill, ask:
+"Do you have a CONTEXT.md or COMPETITOR.md from the project setup? If so, share them — I'll build on that research instead of duplicating it."
+
+If shared, read them. Extract: what the project is, who it's for, competitors already analyzed, any design preferences mentioned.
+
+If not shared, ask:
+- What are you building and who is it for?
+- Any competitors or reference apps?
+- Any design preferences (dark/light, minimal/bold, specific brands you admire)?
+
+### Ask for screenshots
+
+This is the most important input. Say:
+
+"Share 5-10 screenshots of apps or components you like. These can be:
+- Competitor apps (what they do well, what they don't)
+- Design references from any app (even unrelated — if you like how Airbnb does ratings, share that)
+- Specific components you've seen and liked (a calendar widget, a card layout, a navigation pattern)
+- Screenshots from Mobbin, Dribbble, or Awwwards that match your taste
+
+The more specific your references, the better the design direction will be. Your taste drives the design — I structure it."
+
+Wait for screenshots. Do not proceed without at least 3 reference images.
+
+---
+
+## Step 2: Analyze Screenshots
+
+For each screenshot the user shares, analyze and present:
+
+```
+### [Screenshot N]: [What it is — e.g., "Urban Company home screen"]
+
+**Layout:** [Describe the layout structure — grid, cards, list, etc.]
+**Navigation:** [How users move around — tabs, hamburger, bottom bar]
+**Visual style:** [Colors, typography weight, spacing density, depth]
+**What works:**
+- [Specific strength 1]
+- [Specific strength 2]
+**What breaks:**
+- [Specific weakness or friction point]
+**Key component patterns:**
+- [Component 1: brief description of how it's built]
+- [Component 2: brief description]
+```
+
+After analyzing all screenshots, synthesize:
+
+"**Across your references, I see these common threads:**
+- [Pattern 1 — e.g., 'You gravitate toward clean layouts with heavy whitespace']
+- [Pattern 2 — e.g., 'All your references use bottom navigation, not hamburger menus']
+- [Pattern 3 — e.g., 'You prefer shadow-based depth over border-based depth']
+
+Does this match your instinct?"
+
+---
+
+## Step 3: Web Research
+
+Supplement the user's screenshots with your own research. Search for:
+
+- "[project category] app UI design" (e.g., "beauty booking app UI")
+- "[key component] UI pattern" (e.g., "availability calendar mobile UI")
+- "[key component] design Dribbble" or "best [component] UX"
+- "best in class [project category] app design 2025 2026"
+
+Focus on finding component-level references for the 4-6 most important components the project needs. Describe what you find in text — layout approach, interaction pattern, visual style.
+
+If COMPETITOR.md exists and already covers competitors, focus research on component patterns and best-in-class examples rather than re-analyzing competitors.
+
+---
+
+## Step 4: Generate 3 Prototype Directions
+
+Create 3 directions that differ STRUCTURALLY — different user flows, discovery patterns, or navigation models. Not just different colors.
+
+**How to make directions structurally different:**
+
+Ask: "What are 3 fundamentally different ways a user could accomplish the core task in this app?" Each answer becomes a direction.
+
+Example for a beauty booking app:
+- Direction A: Service-first (browse services → pick one → find a beautician)
+- Direction B: Beautician-first (browse beauticians → see their services → book)
+- Direction C: Need-first (describe what you want → get matched → book)
+
+Each direction should include:
+
+```
+### Direction [A/B/C]: "[Short evocative name]"
+**Inspiration:** [Which of the user's references + your research this draws from]
+**Core navigation:** [How the user moves through the app]
+**Discovery pattern:** [How the user finds what they want]
+**Color system:** [Palette description + primary hex value]
+**Typography:** [Font family suggestion + weight/hierarchy description]
+**Component style:** [Cards, shadows, borders, corner radius, spacing]
+**Key differentiator:** [What makes this direction unique]
+**Build complexity:** [Low / Medium / High — based on unique component count]
+**Unique components needed:** [Count — fewer = more consistent, easier to build]
+```
+
+---
+
+## Step 5: Evaluation Framework
+
+Present the evaluation to the user:
+
+```
+## Evaluation
+
+| Criteria                    | Direction A | Direction B | Direction C |
+|-----------------------------|-------------|-------------|-------------|
+| Core action in <3 taps?     |    /5       |    /5       |    /5       |
+| Unique component count      | [N] (low/med/high) | ... | ...        |
+| Build complexity             | Low/Med/High | ...      | ...         |
+| Layout consistency          |    /5       |    /5       |    /5       |
+| Content hierarchy           |    /5       |    /5       |    /5       |
+| Competitor differentiation  |    /5       |    /5       |    /5       |
+
+**Your gut check (this matters most):**
+Which one would YOU want to use? Which would you show in a portfolio?
+```
+
+Score the first 5 criteria yourself. Explain your scoring briefly. Let the user score the gut check.
+
+The user may:
+- Pick one direction outright → proceed with it
+- Combine elements ("Direction A but with the beautician profiles from B") → merge and proceed
+- Reject all three → ask what's missing, generate new directions
+
+---
+
+## Step 6: Generate DESIGN_DIRECTION.md
+
+Based on the chosen direction, generate:
+
+```markdown
+# [Project Name] — Design Direction
+
+## Chosen Direction
+[Name and 1-2 sentence summary of the chosen approach]
+[If combined: explain which elements came from which direction]
+
+## Design Principles
+1. [Principle 1 — e.g., "Clarity over decoration. Every element earns its place."]
+2. [Principle 2 — e.g., "Mobile-first. Desktop is a bonus, not the target."]
+3. [Principle 3 — e.g., "Familiar patterns, premium execution."]
+
+## Color System
+- Primary: [hex] — [where it's used]
+- Secondary: [hex] — [where it's used]
+- Background: [hex]
+- Surface/Card: [hex]
+- Text primary: [hex]
+- Text secondary: [hex]
+- Success: [hex]
+- Error: [hex]
+- Accent: [hex] — [sparingly, for highlights]
+
+## Typography
+- Headings: [font family], [weight guidance]
+- Body: [font family], [size guidance]
+- Captions/labels: [size guidance]
+- Hierarchy: [describe the scale — e.g., "3 levels only: heading, body, caption"]
+
+## Spacing and Layout
+- Grid: [e.g., 8px base grid]
+- Card padding: [e.g., 16px]
+- Section spacing: [e.g., 24px]
+- Screen margin: [e.g., 16px on mobile, 24px on desktop]
+
+## Component Specifications
+
+### [Component 1 — e.g., Service Card]
+**Reference:** [Which screenshot/research this is based on]
+**Must show:** [Required content elements]
+**Layout:** [Horizontal/vertical, image placement, content structure]
+**Style:** [Shadow/border, corner radius, background]
+**Interaction:** [Tap behavior, hover state if desktop]
+
+### [Component 2 — e.g., Navigation Bar]
+[Same structure]
+
+### [Component 3 — e.g., Booking Flow / Primary User Flow]
+[Same structure]
+
+### [Component 4 — e.g., Profile Card / Key Entity Card]
+[Same structure]
+
+[Add 2-4 more key components as needed]
+
+## Navigation Pattern
+- [Type: bottom tab bar / sidebar / top nav / etc.]
+- [Tabs/sections: list each with icon description]
+- [Active state: how current tab is indicated]
+
+## Intentional Decisions (Do NOT Change Without Asking)
+- [Decision 1 — e.g., "No dark mode for v1"]
+- [Decision 2 — e.g., "List-based discovery, not map-based"]
+- [Decision 3 — e.g., "Beautician photo is mandatory, not placeholder"]
+
+## Flexibility
+These are directions, not rigid specifications. Claude Code 
+should follow the visual language and design principles but 
+can adapt layouts, component arrangements, and interaction 
+patterns if it improves usability or responsiveness. 
+
+Claude Code should flag any significant deviations for user 
+review before proceeding.
+```
+
+---
+
+## Step 7: Present and Confirm
+
+Present DESIGN_DIRECTION.md to the user. Explain:
+
+1. **What to do with this file:**
+   "Add this to your project's context/ folder as DESIGN_DIRECTION.md. Claude Code will read it during the Plan and Implementation phases."
+
+2. **When to add it:**
+   - If UI is the first milestone → add before pasting Prompt 3 (Plan)
+   - If UI comes later (e.g., M5) → add before pasting that milestone's prompt
+
+3. **Design checkpoint reminder:**
+   "When Claude Code builds the first UI milestone, it will build only 3 key components first and screenshot them for your review. This catches any design misinterpretation before it scales across all components."
+
+4. **This file is a living document:**
+   "If you discover something during implementation that needs to change (a color doesn't work, a component layout needs adjustment), update DESIGN_DIRECTION.md directly. Claude Code reads it fresh each session."
