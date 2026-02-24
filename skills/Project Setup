@@ -395,9 +395,9 @@ Read all files in context/ folder. Read docs/ if any
 files exist there.
 
 Resolve all "Open" items in CONTEXT.md:
-- For each Open item, present 2-3 options with tradeoffs 
-  before asking me to choose. Don't just ask the question 
-  — help me think through it.
+- For each Open item, use AskUserQuestionTool to present 
+  2-3 options with tradeoffs before asking me to choose. 
+  Don't just ask the question — help me think through it.
 - Only mark an item as resolved after I explicitly confirm.
 
 After resolving all Open items, do a blind spot check:
@@ -405,8 +405,8 @@ Surface concerns, tradeoffs, or edge cases that
 AREN'T in the Open list but could matter. Think about: 
 technical risks, UX friction points, data edge cases, 
 third-party dependencies, and assumptions that haven't 
-been validated. Present each as a question with your 
-recommended approach.
+been validated. Use AskUserQuestionTool to present each 
+as a question with your recommended approach.
 
 After all Open items are resolved and blind spots addressed, 
 create docs/BRAINSTORM.md with all finalized decisions 
