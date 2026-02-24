@@ -60,11 +60,18 @@ Read the conversation. Extract:
 
 Then ask ONLY what's missing from the list above. Say: "Based on our discussion, I already know [summary]. A few things I still need:" — then ask only gap-filling questions.
 
-### Branch Question
+### Branch Questions
 
-Ask explicitly: **"Does this project involve data processing, ML models, or data pipelines?"**
+Ask explicitly:
 
-This determines whether DATA_MODEL.md is generated.
+**Q1: "Does this project involve data processing, ML models, or data pipelines?"**
+→ YES: Generate DATA_MODEL.md with ML sections (feature definitions, model approach)
+
+**Q2: "Does this project have a database with multiple entities and relationships? (e.g., users, venues, bookings, payments)"**
+→ YES: Generate DATA_MODEL.md (without ML sections) + include database reminder in BEFORE PROMPT 1
+→ NO: Skip DATA_MODEL.md (simple apps, static sites, no real database)
+
+Both can be YES (ML project with a complex database). If only Q2 is YES, generate DATA_MODEL.md without the ML-specific sections (Feature Definitions, Model Approach).
 
 ---
 
@@ -177,35 +184,35 @@ Generate these files. Present each one to the user for review before finalizing.
 screenshots observations, or insights that web research missed.]
 ```
 
-### File 3: context/DATA_MODEL.md (only if ML/data project)
+### File 3: context/DATA_MODEL.md (if Q1 or Q2 is YES)
 
 ```markdown
 # Data Model
 
-## Data Sources
+## Data Sources (if applicable)
 - [Source 1]: [what it provides, how accessed, rate limits]
 - [Source 2]: [same]
 
 ## Core Entity
-[What is the primary data object? e.g., "H3 hex grid cells, resolution 9"]
+[What is the primary data object? e.g., "Venue" or "H3 hex grid cells"]
 
 ## Entities
 
-### [Entity 1 — e.g., Booking]
+### [Entity 1 — e.g., Venue]
 [1-2 sentence description of what this entity represents]
 
 **Must track:**
 - [What information this entity needs — described in business terms, NOT column types]
 
 **Business rules:**
-- [Rule 1 — e.g., "Cancellation free if >2 hours before scheduled time"]
-- [Rule 2 — e.g., "Status can only move forward, except cancelled"]
+- [Rule 1 — e.g., "A venue must have at least one court"]
+- [Rule 2 — e.g., "Venue can be active or inactive"]
 
 **Status flow (if applicable):**
-[e.g., confirmed → assigned → in_progress → completed | cancelled]
+[e.g., draft → active → suspended → archived]
 
 **Relationships:**
-- [e.g., Belongs to one user, has many booking_items]
+- [e.g., Has many courts, has many reviews]
 
 ### [Entity 2]
 [Same structure]
@@ -213,6 +220,7 @@ screenshots observations, or insights that web research missed.]
 ## Edge Cases
 - [What happens when X?]
 - [What if Y is empty/null?]
+- [Concurrent access scenarios?]
 
 ## Open for Claude Code to Decide
 - Column types, constraints, and indexes
@@ -221,10 +229,10 @@ screenshots observations, or insights that web research missed.]
 - RLS policies
 - Seed data structure
 
-## Feature Definitions (if ML project)
+## Feature Definitions (ML projects only — skip if Q1 is NO)
 [List computed features if applicable]
 
-## Model Approach (if ML project)
+## Model Approach (ML projects only — skip if Q1 is NO)
 - Type: [regression, classification, scoring, etc.]
 - Target variable: [what are we predicting/scoring]
 - Validation: [approach]
@@ -265,10 +273,10 @@ Phase 5 Report: Not started
 
 ## Structure
 - docs/ — BRAINSTORM.md, PLAN.md, MEMORY.md
-- context/ — CONTEXT.md[, COMPETITOR.md][, DATA_MODEL.md]
+- context/ — CONTEXT.md[, COMPETITOR.md][, DATA_MODEL.md][, DESIGN_DIRECTION.md]
 - src/ — [language] backend (subfolders created per milestone)
 [- frontend/ — [framework] app (scaffolded when needed)]
-[- scripts/ — SQL setup, seed scripts (if data/ML project)]
+[- scripts/ — SQL setup, seed scripts (if project has database or data)]
 [- data/ — seed data, models, processed features (if data/ML project)]
 - .claude/agents/ — verify-app.md[, verify-data.md]
 - .claude/settings.json — pre-allowed permissions
@@ -279,12 +287,15 @@ Phase 5 Report: Not started
 - @docs/PLAN.md — Step-by-step build plan (Plan output)
 - @docs/MEMORY.md — Claude's session notes (auto-updated)
 - @context/CONTEXT.md — Master context with decided vs. open items
+[- @context/DATA_MODEL.md — Entity definitions and business rules]
+[- @context/DESIGN_DIRECTION.md — Visual direction and component specs]
 
 ## Tech Stack
 [Fill from discovery — language, framework, database, frontend, testing, deploy]
 
 ## Conventions
-[Fill based on tech stack. Examples:]
+[Fill based on suggested tech stack. If tech stack is still Open, 
+fill based on suggested stack — Brainstorm will update if it changes.]
 - [Language]: [style rules — e.g., type hints, snake_case, docstrings]
 - [Frontend]: [style rules — e.g., functional components, hooks, Tailwind]
 - All API responses: consistent JSON error format
@@ -292,11 +303,12 @@ Phase 5 Report: Not started
 - Git commit after each sub-step. Format: "M1.2: description"
 - Git push after each milestone completion
 - Never commit broken code. Verify before committing.
+[If project has database, add:]
+- Seeds: all seed scripts must be idempotent
 [If ML project, add:]
 - Data: never commit raw data to git, only generation scripts
 - Models: save to data/models/ with timestamp versioning
 - Features: log distribution stats after computation
-- Seeds: all seed scripts must be idempotent
 
 ## Rules
 1. Plan before implementing. Plan mode for any multi-file change.
@@ -326,7 +338,8 @@ relevant files and executes.
 
 ## BEFORE PROMPT 1
 
-### If this project has a critical database:
+[Include this section if Q2 = YES during discovery:]
+### Database: Design the data model first
 Stay in claude.ai. Design the data model through 
 deep conversation. Output: context/DATA_MODEL.md 
 with entities, relationships, business rules, status 
@@ -334,7 +347,8 @@ flows, and edge cases. Do NOT specify column types,
 indexes, or SQL — Claude Code handles the technical 
 implementation. Add to context/ folder.
 
-### If this project has UI and design matters:
+[Include this section if project has UI:]
+### Design: Establish visual direction first
 Go to claude.ai. Run the Design Research skill.
 Output: context/DESIGN_DIRECTION.md. Add to context/ folder.
 
@@ -375,7 +389,11 @@ After all Open items are resolved, create docs/BRAINSTORM.md
 with all finalized decisions organized by category 
 (product, technical, design, data).
 
-Update CLAUDE.md Status: Phase 1 Brainstorm → Complete.
+Update CLAUDE.md:
+- Status: Phase 1 Brainstorm → Complete
+- Conventions section: update to match the confirmed tech 
+  stack. If tech stack changed from what was suggested, 
+  rewrite conventions entirely for the confirmed stack.
 
 ---
 
@@ -502,8 +520,8 @@ Present all generated files to the user. Explain:
    - Open the project folder in Claude Code
    - Start pasting prompts from atomic-prompts.md one at a time
 
-2. **Remind about optional pre-steps:**
-   - If the database is critical to this project: "Before opening Claude Code, I recommend we design the database schema together here in claude.ai. Want to do that now?"
+2. **Remind about pre-steps (based on discovery answers):**
+   - If Q2 = YES (database with multiple entities): "Before opening Claude Code, I recommend we design the data model together here in claude.ai. This gives Claude Code better foundations. Want to do that now?"
    - If this project has UI: "Before the Plan phase, you may want to run the Design Research skill to establish visual direction. You can do this now or before the first UI milestone."
 
 3. **The three roles:**
