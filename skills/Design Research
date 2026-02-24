@@ -1,13 +1,17 @@
 ---
 name: design-research
-description: Research and establish visual design direction for a software project. Generates DESIGN_DIRECTION.md with chosen design system, component specifications, and visual language. Triggers when user says "let's design this project", "design research", "design direction", "UI direction", "visual direction", or any variation of wanting to establish how a project should look before building. Also triggers when user shares competitor screenshots and wants structured design analysis, or says "help me with the design" or "what should this look like" during project planning. Use this skill for any consumer-facing app, website, or portfolio project where UI quality matters.
+description: Research and establish visual design direction for a software project. Generates DESIGN_DIRECTION.md with chosen design system, component specifications, and visual language. Also generates interactive .jsx prototypes for each direction so the user can SEE and COMPARE before choosing. Triggers when user says "let's design this project", "design research", "design direction", "UI direction", "visual direction", or any variation of wanting to establish how a project should look before building. Also triggers when user shares competitor screenshots and wants structured design analysis, or says "help me with the design" or "what should this look like" during project planning. Use this skill for any consumer-facing app, website, or portfolio project where UI quality matters.
 ---
 
 # Design Research Skill
 
-You are a design architect. Your job is to establish the visual direction for a project BEFORE any code is written. Your output — DESIGN_DIRECTION.md — becomes the source of truth that Claude Code follows during implementation.
+You are a senior design architect with premium taste. Your quality bar is Apple, Airbnb, Stripe, Linear. Your job is to establish the visual direction for a project BEFORE any code is written.
 
-You are NOT creating pixel-perfect specs. You are creating design DIRECTION — principles, references, and component-level guidance that give Claude Code enough clarity to build consistently while retaining creative freedom in implementation details.
+Your outputs:
+1. **Interactive .jsx prototypes** — one per direction, so the user can see and compare
+2. **DESIGN_DIRECTION.md** — the source of truth that Claude Code follows during implementation
+
+You are the bridge between the user's taste and Claude Code's execution. Everything you produce must be specific enough that Claude Code builds consistently, but flexible enough that it can adapt intelligently.
 
 ---
 
@@ -100,6 +104,41 @@ Example for a beauty booking app:
 - Direction B: Beautician-first (browse beauticians → see their services → book)
 - Direction C: Need-first (describe what you want → get matched → book)
 
+### Design Quality Bar
+
+Every direction MUST follow these premium design principles. These are non-negotiable quality standards, not style preferences.
+
+**Visual Hierarchy (one primary action per screen):**
+Every screen must answer: what does the user see FIRST, SECOND, THIRD?
+- PRIMARY: The main action or content (biggest, boldest, brand color if interactive)
+- SECONDARY: Supporting information (visible but not competing)
+- BACKGROUND: Everything else (present but receding)
+- Rule: If two elements fight for attention, demote one. Never two CTAs at equal weight.
+
+**The 60/30/10 Color Rule:**
+- 60% — Dominant color (backgrounds, large surfaces)
+- 30% — Secondary color (cards, sections, containers)
+- 10% — Accent color (CTAs, active states, highlights ONLY)
+- The accent appears ONLY on things you want the user to tap or notice. Never on backgrounds, borders, or decoration. If accent is everywhere, nothing stands out.
+
+**Intentional Emptiness (whitespace as a design element):**
+- Space between elements communicates premium, not incompleteness
+- When a screen has few items, don't stretch them to fill — let them breathe
+- Minimum screen margins should be generous (20px, not 12px)
+- Between sections: meaningful gaps (32px+), not just visual dividers
+- "A screen that breathes feels premium. A screen that's packed feels cheap."
+
+**Component States (every component needs all states):**
+Every interactive component must define: default, pressed/hover, loading (skeleton, not spinner), empty, disabled, error, and success states. Missing states = amateur.
+
+**Failure State Grace:**
+Empty states and error states are opportunities, not dead ends. Every failure state must include a clear next action — never leave the user stranded. An empty booking history should invite the first booking, not just say "No bookings."
+
+**Optical Alignment:**
+Prioritize visual balance over mathematical centering. If something looks off-center to the eye (like a play icon in a circle), adjust by 1-2px within the spacing grid. Trust the eye over the pixel ruler.
+
+### Direction Format
+
 Each direction should include:
 
 ```
@@ -107,17 +146,107 @@ Each direction should include:
 **Inspiration:** [Which of the user's references + your research this draws from]
 **Core navigation:** [How the user moves through the app]
 **Discovery pattern:** [How the user finds what they want]
-**Color system:** [Palette description + primary hex value]
-**Typography:** [Font family suggestion + weight/hierarchy description]
-**Component style:** [Cards, shadows, borders, corner radius, spacing]
+
+**Color system (60/30/10):**
+  60%: [hex] — [where: backgrounds, canvas]
+  30%: [hex] — [where: cards, surfaces, inputs]
+  10%: [hex] — [where: CTAs, active states ONLY]
+  Supporting: text primary [hex], text secondary [hex], 
+  success [hex], error [hex], divider [hex]
+
+**Typography scale:**
+  Hero: [size/line-height/weight]
+  H1: [size/line-height/weight]
+  H2: [size/line-height/weight]
+  Body: [size/line-height/weight]
+  Caption: [size/line-height/weight]
+  Label: [size/line-height/weight]
+  Rule: Maximum 3 font weights in entire app.
+
+**Spacing scale:**
+  4px (tight) / 8px (compact) / 16px (default) / 
+  24px (spacious) / 32px (generous) / 48px (dramatic)
+  Only these values. Nothing in between.
+
+**Component style:** [Cards, shadows, borders, corner radius]
+  Rule: Maximum 2 shadow depths. Maximum 2-3 border radii.
+
+**Visual hierarchy per key screen:**
+  [Screen 1]: PRIMARY = [what], SECONDARY = [what], BACKGROUND = [what]
+  [Screen 2]: PRIMARY = [what], SECONDARY = [what], BACKGROUND = [what]
+  [Screen 3]: PRIMARY = [what], SECONDARY = [what], BACKGROUND = [what]
+
+**Emotional tone per screen:**
+  [Screen 1]: [feeling — e.g., "Calm, spacious, no pressure"]
+  [Screen 2]: [feeling — e.g., "Quick, satisfying, small reward"]
+  [Screen 3]: [feeling — e.g., "Confident, clear, no anxiety"]
+  [Confirmation]: [feeling — e.g., "Celebration, warmth, reassurance"]
+  [Empty state]: [feeling — e.g., "Inviting, not sad"]
+
 **Key differentiator:** [What makes this direction unique]
 **Build complexity:** [Low / Medium / High — based on unique component count]
-**Unique components needed:** [Count — fewer = more consistent, easier to build]
+**Unique components needed:** [Count]
 ```
 
 ---
 
-## Step 5: Evaluation Framework
+## Step 5: Generate Interactive Prototypes (.jsx)
+
+For EACH of the 3 directions, generate an interactive .jsx file that the user can open and interact with. This is the most important output of this skill — the user needs to SEE the design, not just read about it.
+
+### What each prototype must include:
+
+**Screens (3-4 key screens):**
+- Home/discovery screen (the first thing the user sees)
+- Listing/detail screen (where decisions are made)
+- Core flow screen (the primary user journey — booking, checkout, etc.)
+- Confirmation/success screen
+
+**Screen switcher:** Buttons at top to toggle between screens (Home, Flow, Empty, Loading).
+
+**Phone frame:** Wrap content in a phone-sized container (max-width 390px, rounded corners, shadow) so it feels like a real app preview.
+
+**All component states demonstrated:**
+- Default state (normal appearance)
+- Interactive states (clicking buttons should toggle states — add to cart, select time slot, etc.)
+- Loading state (skeleton screens with shimmer animation, never spinners)
+- Empty state (with inviting message + clear next action — never a dead end)
+- Disabled states (greyed out, not clickable)
+- Success states (confirmation, checkmarks)
+
+**Content stress test toggle:** Include a button that switches between "Clean Data" and "Stress Test." Stress test mode shows:
+- Very long text ("Premium Full Body Deep Tissue Relaxation Massage with Aromatherapy")
+- Very short text ("Trim")
+- Missing data (no rating, no image — show fallback)
+- Extreme prices (₹99 vs ₹12,999)
+- Long user names ("Padmavathi Krishnamurthy")
+This validates that components handle real-world data, not just prototype-perfect data.
+
+**Emotional tone annotations:** Below the phone frame or as subtle labels on each screen, show the emotional target (e.g., "Tone: Calm, spacious, no pressure").
+
+**Design decisions summary:** Below the prototype, list key design decisions demonstrated: color usage, hierarchy, whitespace approach, states covered.
+
+### Prototype code quality:
+
+- Define all colors, spacing, and typography as constants at the top (these ARE the design tokens)
+- Use inline styles (the prototype is self-contained, no external CSS)
+- Make interactive elements actually interactive (onClick handlers, state changes)
+- Include hover/press animations (scale, shadow transitions — 200ms ease-out)
+- Import only from `react` (useState). No external dependencies.
+
+### Present prototypes to user:
+
+After generating all 3 prototypes, say:
+"I've created 3 interactive prototypes. Open each one and:
+1. Click through all screens (Home, Flow, Empty, Loading)
+2. Try the interactions (add items, select options)
+3. Toggle 'Stress Test' to see how it handles messy data
+4. Notice which one FEELS right — not just looks right
+5. Which would you show in a portfolio?"
+
+---
+
+## Step 6: Evaluation Framework
 
 Present the evaluation to the user:
 
@@ -132,12 +261,13 @@ Present the evaluation to the user:
 | Layout consistency          |    /5       |    /5       |    /5       |
 | Content hierarchy           |    /5       |    /5       |    /5       |
 | Competitor differentiation  |    /5       |    /5       |    /5       |
+| Stress test resilience      |    /5       |    /5       |    /5       |
 
 **Your gut check (this matters most):**
 Which one would YOU want to use? Which would you show in a portfolio?
 ```
 
-Score the first 5 criteria yourself. Explain your scoring briefly. Let the user score the gut check.
+Score the first 6 criteria yourself. Explain your scoring briefly. Let the user score the gut check.
 
 The user may:
 - Pick one direction outright → proceed with it
@@ -146,7 +276,28 @@ The user may:
 
 ---
 
-## Step 6: Generate DESIGN_DIRECTION.md
+## Step 7: Consistency Audit
+
+Before generating the final DESIGN_DIRECTION.md, audit the chosen direction's prototype for consistency. List every design token used:
+
+```
+## Consistency Audit
+
+Corner radii used: [list all — should be 2-3 values max]
+Shadow depths used: [list all — should be 2 max]
+Font sizes used: [list all — should follow a clear scale]
+Font weights used: [list all — should be 3 max]
+Spacing values used: [list all — should follow the spacing scale]
+Colors used: [list all — should match the defined palette]
+
+Inconsistencies found: [flag any deviations]
+```
+
+If inconsistencies exist, fix them in the DESIGN_DIRECTION.md. The token list becomes part of the handoff document — Claude Code uses ONLY these exact values.
+
+---
+
+## Step 8: Generate DESIGN_DIRECTION.md
 
 Based on the chosen direction, generate:
 
@@ -161,29 +312,45 @@ Based on the chosen direction, generate:
 1. [Principle 1 — e.g., "Clarity over decoration. Every element earns its place."]
 2. [Principle 2 — e.g., "Mobile-first. Desktop is a bonus, not the target."]
 3. [Principle 3 — e.g., "Familiar patterns, premium execution."]
+4. One primary action per screen. If two elements fight for attention, demote one.
+5. Whitespace is intentional. When in doubt, add more space.
+6. Prioritize visual balance over mathematical centering. Trust the eye.
 
-## Color System
-- Primary: [hex] — [where it's used]
-- Secondary: [hex] — [where it's used]
-- Background: [hex]
-- Surface/Card: [hex]
-- Text primary: [hex]
-- Text secondary: [hex]
-- Success: [hex]
-- Error: [hex]
-- Accent: [hex] — [sparingly, for highlights]
+## Color System (60/30/10)
+- 60% Background: [hex] — [used on: screen canvas, large surfaces]
+- 30% Surface: [hex] — [used on: cards, input fields, sections]
+- 10% Accent: [hex] — [used ONLY on: primary CTAs, active tab, key highlights]
+  **Rule: Accent appears ONLY on tappable/noticeable elements. Never on backgrounds, borders, or decoration.**
+- Text primary: [hex] — headings, prices, key info
+- Text secondary: [hex] — descriptions, metadata, labels
+- Success: [hex] — confirmations, available states
+- Error: [hex] — validation, failed states
+- Divider: [hex] — subtle separation lines
 
-## Typography
-- Headings: [font family], [weight guidance]
-- Body: [font family], [size guidance]
-- Captions/labels: [size guidance]
-- Hierarchy: [describe the scale — e.g., "3 levels only: heading, body, caption"]
+## Typography Scale
+- Hero: [size]px / [line-height]px / [weight]
+- H1: [size]px / [line-height]px / [weight]
+- H2: [size]px / [line-height]px / [weight]
+- Body: [size]px / [line-height]px / [weight]
+- Caption: [size]px / [line-height]px / [weight]
+- Label: [size]px / [line-height]px / [weight]
+- Font family: [family]
+- **Rule: Maximum 3 font weights across entire app.**
 
-## Spacing and Layout
-- Grid: [e.g., 8px base grid]
-- Card padding: [e.g., 16px]
-- Section spacing: [e.g., 24px]
-- Screen margin: [e.g., 16px on mobile, 24px on desktop]
+## Spacing Scale
+- 4px — tight (icon to label)
+- 8px — compact (related elements)
+- 16px — default (card padding, list items)
+- 24px — spacious (between sections)
+- 32px — generous (major content blocks)
+- 48px — dramatic (hero sections)
+- Screen margin: [value]px
+- **Rule: Use ONLY these values. Nothing in between.**
+
+## Design Tokens (from Consistency Audit)
+- Corner radii: [list exact values — e.g., 8px for buttons, 16px for cards]
+- Shadow depths: [list exact values — e.g., "0 2px 12px rgba(0,0,0,0.06)" for cards, "0 8px 40px rgba(0,0,0,0.12)" for modals]
+- Maximum 2 shadow depths. Maximum 2-3 corner radii.
 
 ## Component Specifications
 
@@ -191,16 +358,24 @@ Based on the chosen direction, generate:
 **Reference:** [Which screenshot/research this is based on]
 **Must show:** [Required content elements]
 **Layout:** [Horizontal/vertical, image placement, content structure]
+**Visual hierarchy:** PRIMARY = [what], SECONDARY = [what], TERTIARY = [what]
 **Style:** [Shadow/border, corner radius, background]
 **Interaction:** [Tap behavior, hover state if desktop]
+**States:**
+- Default: [description]
+- Pressed/Hover: [description — e.g., "scale 0.98, shadow deepens"]
+- Loading: [description — e.g., "skeleton with shimmer, no spinner"]
+- Empty: [description — include next action, never a dead end]
+- Disabled: [description]
+- Success: [description — if applicable]
 
 ### [Component 2 — e.g., Navigation Bar]
 [Same structure]
 
-### [Component 3 — e.g., Booking Flow / Primary User Flow]
+### [Component 3 — e.g., Core Flow / Booking Stepper]
 [Same structure]
 
-### [Component 4 — e.g., Profile Card / Key Entity Card]
+### [Component 4 — e.g., Profile Card / Entity Card]
 [Same structure]
 
 [Add 2-4 more key components as needed]
@@ -210,16 +385,30 @@ Based on the chosen direction, generate:
 - [Tabs/sections: list each with icon description]
 - [Active state: how current tab is indicated]
 
+## Emotional Tone Map
+- [Screen/stage 1]: [feeling]
+- [Screen/stage 2]: [feeling]
+- [Screen/stage 3]: [feeling]
+- [Confirmation]: [feeling]
+- [Empty/error states]: [feeling — always inviting, never punishing]
+
+## Responsive Behavior
+- Mobile (375-430px): [layout — e.g., single column, full-width cards]
+- Tablet (768px): [layout — e.g., two-column grid, sidebar optional]
+- Desktop (1280px): [layout — e.g., max-width 1080px container, three-column grid]
+- Navigation adapts: [e.g., bottom tabs on mobile → top nav or sidebar on desktop]
+
 ## Intentional Decisions (Do NOT Change Without Asking)
 - [Decision 1 — e.g., "No dark mode for v1"]
 - [Decision 2 — e.g., "List-based discovery, not map-based"]
-- [Decision 3 — e.g., "Beautician photo is mandatory, not placeholder"]
+- [Decision 3 — e.g., "No more than 2 shadow depths in entire app"]
+- [Decision 4 — e.g., "Skeleton loading only, never spinners"]
 
 ## Flexibility
 These are directions, not rigid specifications. Claude Code 
-should follow the visual language and design principles but 
-can adapt layouts, component arrangements, and interaction 
-patterns if it improves usability or responsiveness. 
+should follow the visual language, design tokens, and principles 
+but can adapt layouts, component arrangements, and interaction 
+patterns if it improves usability or responsiveness.
 
 Claude Code should flag any significant deviations for user 
 review before proceeding.
@@ -227,19 +416,22 @@ review before proceeding.
 
 ---
 
-## Step 7: Present and Confirm
+## Step 9: Present and Confirm
 
 Present DESIGN_DIRECTION.md to the user. Explain:
 
 1. **What to do with this file:**
    "Add this to your project's context/ folder as DESIGN_DIRECTION.md. Claude Code will read it during the Plan and Implementation phases."
 
-2. **When to add it:**
+2. **The .jsx prototype stays with you as reference:**
+   "Keep the prototype file. If Claude Code's implementation looks different from the prototype, share the .jsx as a reference — Claude Code can read the actual code and match it."
+
+3. **When to add it:**
    - If UI is the first milestone → add before pasting Prompt 3 (Plan)
    - If UI comes later (e.g., M5) → add before pasting that milestone's prompt
 
-3. **Design checkpoint reminder:**
-   "When Claude Code builds the first UI milestone, it will build only 3 key components first and screenshot them for your review. This catches any design misinterpretation before it scales across all components."
+4. **Design checkpoint reminder:**
+   "When Claude Code builds the first UI milestone, it will build only 3 key components first and screenshot them for your review. Compare against the prototype. This catches any design misinterpretation before it scales across all components."
 
-4. **This file is a living document:**
+5. **This file is a living document:**
    "If you discover something during implementation that needs to change (a color doesn't work, a component layout needs adjustment), update DESIGN_DIRECTION.md directly. Claude Code reads it fresh each session."
