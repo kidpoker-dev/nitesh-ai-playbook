@@ -233,16 +233,45 @@ Design: Minimal, content-dense. Function over form. Clear headings, scannable st
 
 ---
 
-## Step 6: The Ghost Deck Check (Before Designing)
+## Step 6: Self-Critique Evaluator Loop
 
-Before creating any visual slides, mentally draft a "ghost deck" — just the titles in sequence. Read them aloud:
+The skill uses two evaluator checkpoints to enforce quality. These are not optional checks — they are gates. Do not proceed to the next stage until the checkpoint passes.
 
-1. Do they tell a coherent story?
-2. Would someone reading ONLY the titles understand the main message?
-3. Does each title state a specific insight (not a topic label)?
-4. Is there a clear beginning, middle, and end?
+### Checkpoint A: Ghost Deck Evaluator (BEFORE designing slides)
 
-If any answer is no, fix the titles before proceeding to design.
+After generating the list of slide titles (the ghost deck), evaluate each title against these criteria before writing any slide content:
+
+**For each title, check:**
+1. Is it an action title (complete sentence stating an insight)? If it reads as a topic label ("Market Overview", "Key Findings"), rewrite it.
+2. Is it under 18 words? Titles longer than 18 words tend to wrap past 2 lines at 20pt. Compress if needed.
+3. Does it contain "and" connecting two separate ideas? If yes, consider splitting into two slides.
+
+**For the full title sequence, check:**
+4. Read all titles in order — do they tell a coherent story? Would someone reading ONLY the titles understand the main message?
+5. Is there a clear beginning (hook/context), middle (evidence/analysis), and end (recommendation/next steps)?
+6. Could any slides be reordered without breaking the narrative? If yes, the flow needs tightening.
+
+**If any check fails:** Rewrite the affected titles before proceeding to slide design. Do not skip this step under token pressure — a bad ghost deck produces a bad presentation regardless of how good the individual slides look.
+
+### Checkpoint B: Post-Generation Evaluator (AFTER all slides are generated)
+
+After generating all slide content, run these checks across the full deck before presenting to the user:
+
+**Anti-pattern scan (binary pass/fail per slide):**
+- Does any slide use a topic title instead of an action title? (Re-check — titles can drift during content generation)
+- Do any two consecutive slides use the same layout type?
+- Does any slide have more than 5 bullet points?
+- Does any slide have body text exceeding 40 words?
+- Does the last slide end with "Thank You" or "Questions?" instead of a takeaway?
+- Are there accent underlines below any title?
+- Is body text center-aligned anywhere?
+
+**Content density check (per slide):**
+- Count bullets: flag any slide exceeding 5
+- Count body text words: flag any slide exceeding 40 words
+- Check if any slide has fewer than 15 words of body content (too thin — may need merging with adjacent slide)
+
+**If any check fails:** Fix the specific slide before presenting. One fix can create another issue (e.g., splitting an overloaded slide may create a layout repeat), so re-check affected slides after each fix.
 
 ---
 
