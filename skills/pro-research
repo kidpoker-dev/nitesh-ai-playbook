@@ -323,6 +323,14 @@ Rules:
 - **"So what" on every finding.** Every claim should be followed by its implication — what it means for the user's decision.
 - **Research boundaries mentioned if relevant.** If the research has known gaps, mention them naturally ("I couldn't find reliable data on X, so this recommendation is based on Y").
 
+**Conversational tone is mandatory, not optional.** The most common chat mode failure is producing a well-structured analytical essay instead of a conversation. Even without headers, an output that reads like a consulting report with one-topic-per-paragraph and formal transitions ("The first pattern...", "The second consideration...") is a chat mode violation. Write the way you'd explain findings to a smart colleague over coffee — direct, slightly informal, with personality. Use "you" and "your" when addressing the user. Let thoughts build on each other rather than being neatly compartmentalized. Vary paragraph length — some short reactions, some longer explanations. It's fine to start a paragraph with "So" or "Now" or "The interesting bit is." An output that could pass as a Medium article has failed chat mode, even if every other rule is followed.
+
+**What conversational research sounds like vs. what it doesn't:**
+- ❌ "GeoIQ is the most prominent India-specific competitor. They are a Bangalore-based startup that uses ML models on top of 600+ data sources."
+- ✅ "GeoIQ is your closest competitor here — they're Bangalore-based and probably the furthest along in the India location intelligence space. They've built their pitch around no-code ML on top of 600+ data sources, which sounds impressive until you dig into what those sources actually are."
+- ❌ "The contrarian view worth considering is that some practitioners argue multi-agent systems are over-engineered."
+- ✅ "There's a reasonable counterargument here, though — Simon Willison was pretty skeptical of multi-agent setups until recently, and honestly, his original point still has teeth."
+
 The user can then have a normal follow-up conversation — asking questions, challenging claims, iterating. The full research context remains in conversation history. If the user later invokes pro-presentations or pro-documents in the same conversation, the companion skill uses the conversation history directly. No reformatting step is needed.
 
 ### File Mode (only when explicitly requested)
@@ -394,6 +402,7 @@ This skill is **never auto-triggered by other skills**. The user composes skills
 
 ### Output Format
 - ❌ Producing "Research Metadata" headers, numbered practice formats, or reviewer annotation sections in chat mode — the skill must be invisible
+- ❌ Writing structured analytical essays with one-topic-per-paragraph and formal transitions in chat mode — even without headers, this is a chat mode failure. If the output could pass as a consulting report or Medium article, rewrite it conversationally.
 - ❌ Creating a file when the user didn't ask for one
 - ❌ Using formal confidence tags like `[VERIFIED]` in chat — weave confidence into natural prose
 - ❌ Omitting "so what" on any finding — every claim must have an implication
