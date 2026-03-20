@@ -1,1 +1,417 @@
+---
+name: pro-research
+description: A research transparency and verification skill that ensures Claude's research output is trustworthy, well-sourced, and actionable. Every claim tagged with confidence, every source quality-checked, every finding verified by independent reviewers. This skill is OPT-IN ONLY — trigger ONLY when the user explicitly invokes it with phrases like "use pro-research", "deep research this", "research this properly", "pro-research", "verify this thoroughly", or "run the full research pipeline". Do NOT auto-trigger on general research queries, competitor analysis, best practices, or architecture questions — those run normally without this skill unless the user specifically asks for the pro-research treatment. This avoids adding 2-4 minutes of latency to every research query.
+---
 
+# Pro Research Skill
+
+## Philosophy
+
+This skill is a **transparency layer, not a restriction layer**. Claude can think freely, explore broadly, and speculate — but must show its work. The written research artifact is the review surface. If the research is wrong, every downstream decision built on it will be wrong.
+
+**Anti-boxing clause**: These rules govern how research is **presented**, not what Claude can **think or explore**. Speculation is welcome — it must be labeled as speculation. Contrarian views are welcome — they must be sourced or flagged as Claude's own reasoning.
+
+---
+
+## Phase 1: Detect Research Mode
+
+Before doing ANY research, read the user's query and classify it:
+
+| Mode | Trigger signals | Output shape | Feeds into |
+|------|----------------|-------------|------------|
+| **Competitor / Design** | "competitor analysis", "how does X do it", "design patterns in Y industry", "what are competitors doing" | Structured comparison: what they do → decisions behind it → gaps | project-setup (COMPETITOR.md), design-research |
+| **Best Practices / How-to** | "best practices for", "how should I", "what's the right way to", "recommended approach" | Ranked practices with source + confidence per practice | project-setup (CONTEXT.md), skill development |
+| **Market / Domain** | "market size for", "who are the players in", "industry landscape", "TAM for" | Landscape map: players, segments, trends, data with sources | project-setup (BRAINSTORM.md), pitch decks, strategy decks |
+| **Architecture / Technical** | "how to architect", "system design for", "what patterns for", "tech stack for" | Pattern options with tradeoffs, real-world examples, failure modes | project-setup (DATA_MODEL.md), CLAUDE.md architecture decisions |
+
+**If ambiguous, ask the user.** Do not guess — the mode determines the entire pipeline behavior.
+
+---
+
+## Phase 2: Multi-Angle Research (parallel)
+
+Every research query gets investigated from three independent angles. This is non-negotiable — single-angle research produces biased output.
+
+### Angle 1 — Official Sources
+- **Start from the primary source of truth for the domain BEFORE review sites and blog posts.** For any topic, identify who the recognized authority is and go there first: the creator's own documentation, the standards body, the official specification, the peer-reviewed research, the company's own engineering blog. Review sites and blog posts supplement — they don't lead. If you find yourself building recommendations from aggregator sites without checking the primary source, you're doing it wrong.
+- Official docs, creator's own writing, published papers, benchmarks
+- Framework documentation, API references, company blogs
+- Priority: the people who built the thing, speaking about the thing
+
+### Angle 2 — Practitioner Sources
+- Builders who shipped in production, case studies, post-mortems
+- Engineering blogs from teams that used it at scale
+- Conference talks with real numbers and architecture diagrams
+- Priority: people who have battle scars, not just opinions
+
+### Angle 3 — Contrarian Sources
+- Criticisms, failure stories, limitations, migration-away stories
+- "Why NOT to use X" articles, known footguns, scaling walls
+- Priority: informed dissent with specifics, not drive-by negativity
+
+**In Claude Code**: spawn 3 parallel sub-agents, one per angle.
+**In claude.ai**: run 3 separate web searches with different framings (e.g., "[topic] official documentation", "[topic] production experience case study", "[topic] problems limitations criticism").
+
+**Competitor/Design mode special rule**: Angle 1 should **fetch and analyze competitor websites directly** — pricing pages, feature pages, UI flows, onboarding screens. Don't rely solely on secondary sources writing about competitors.
+
+**Practical fetching guidance** (because many modern sites are SPAs that return empty shells to web_fetch):
+- Try specific URL slugs first: `/pricing`, `/features`, `/about`, `/product`, `/plans`
+- Look for `sitemap.xml` to find crawlable page URLs
+- If direct fetch fails, search for cached or archived versions of the page
+- Fall back to screenshots, reviews, and comparison sites that quote the actual data
+- For pricing: search "[competitor] pricing 2026" — third-party reviews often list pricing that the site hides behind modals
+
+**Mandatory Current-Status Verification (all modes)**:
+Before recommending, citing, or including ANY entity (product, company, tool, framework, service, venue) in the research output, verify it is currently operational. Run a quick search: "[entity name] shut down / discontinued / deprecated / closed / acquired 2025 2026". If the entity no longer exists or has fundamentally changed, exclude it from recommendations and note what replaced it. This applies to every mode — a deprecated framework is the same class of error as a closed restaurant.
+
+---
+
+## Phase 3: Consolidate into Research Artifact
+
+Merge findings from all 3 angles into a single structured artifact. The format depends on the mode:
+
+### Competitor / Design Mode
+```
+## [Competitor Name]
+### What they do
+[Feature/approach description]
+### Decisions behind it
+[Why they likely made this choice — inferred from evidence]
+### Gaps / Weaknesses
+[What's missing, underserved, or poorly executed]
+### Sources
+[URLs with brief quality note]
+```
+Repeat per competitor. End with a **Cross-Competitor Synthesis** section: patterns across all, white space opportunities, consensus approaches vs. differentiators.
+
+### Best Practices / How-to Mode
+```
+## Practice: [Name]
+- **Ranking**: #[N] by consensus strength
+- **What**: [Description]
+- **Why it matters**: [Impact]
+- **Source**: [Who says this + URL]
+- **Confidence**: [verified / likely / uncertain]
+- **Caveats**: [When this does NOT apply]
+```
+End with a **Consensus vs. Debate** section: which practices everyone agrees on, which are contested.
+
+### Market / Domain Mode
+```
+## Market Landscape: [Domain]
+### Size & Growth
+[Numbers with sources and dates — flag if estimates vary across sources]
+### Key Players
+| Player | Segment | Strength | Weakness | Source |
+### Trends
+[Each trend with supporting evidence and timeline]
+### Assumptions
+[Every assumption explicitly called out]
+```
+
+**Unit Economics Sub-Template** — activates when the query mentions CAC, LTV, take rate, delivery cost, margin, unit economics, or similar financial metrics. Use this template IN ADDITION to the landscape map above:
+```
+## Unit Economics: [Company/Domain]
+### Revenue Model
+[How money flows: take rate, subscription, commission, etc.]
+### Key Metrics
+| Metric | Value | Source | Date | Confidence |
+| CAC | | | | |
+| LTV | | | | |
+| LTV:CAC Ratio | | | | |
+| Take Rate | | | | |
+| Gross Margin | | | | |
+| Contribution Margin | | | | |
+| Delivery Cost / Order | | | | |
+### Benchmark Comparison
+[Compare against industry benchmarks or comparable companies]
+### Assumptions & Caveats
+[Every assumption, especially for derived/calculated metrics]
+```
+
+### Architecture / Technical Mode
+```
+## Pattern: [Name]
+- **What**: [Description]
+- **When to use**: [Ideal conditions]
+- **When NOT to use**: [Anti-patterns, wrong-fit scenarios]
+- **Real-world example**: [Company/project that uses this, with specifics]
+- **Failure modes**: [What goes wrong and how to detect it]
+- **Tradeoffs**: [What you give up by choosing this]
+- **Source**: [URL + quality note]
+```
+End with a **Decision Matrix** comparing all patterns on key criteria relevant to the user's context.
+
+### Tagging Rules (all modes)
+
+Every factual claim in the artifact gets one of these tags:
+
+| Tag | Meaning | When to use |
+|-----|---------|-------------|
+| **verified** | Confirmed by 2+ independent sources | Default goal for key claims |
+| **likely** | Single credible source, consistent with broader evidence | Acceptable for supporting details |
+| **uncertain** | Single source with no corroboration, or conflicting signals | Flag prominently, do not build recommendations on this |
+| **contradicted** | Directly contradicted by another credible source | Must investigate further before delivering |
+| **speculation** | Claude's own reasoning, not sourced | Label clearly, explain reasoning chain |
+
+---
+
+## Phase 4: Source Quality Filter
+
+After consolidation, audit every source used in the artifact.
+
+### Quality Signals (prioritize sources that have these)
+- Author has verifiable experience building/shipping in this domain
+- Content includes specifics: numbers, code, architecture diagrams, timelines
+- Writer acknowledges tradeoffs and limitations (not a pure sales pitch)
+- Claims corroborated by at least one other independent source
+
+### Priority Order
+1. **Creator's own voice** — the team that built the thing, writing about the thing
+2. **Practitioner who shipped** — used it in production, has real data
+3. **Curated community** — respected technical publications, peer-reviewed content
+4. **General** — everything else
+
+### Downrank or Exclude
+- Content farms and generic listicles
+- Undated content (no publication date = no recency trust)
+- No identifiable author
+- Pure sales pitch disguised as analysis
+- Forum posts without supporting evidence
+- **SEO-optimized filler**: if a source reads like it was written for a search engine rather than a human — repeating keywords, generic "Top 10" framing, no original data or analysis, advice that applies to anything — drop it to "General" category immediately. These dominate search results for market research queries and add zero signal.
+
+### Recency Gates
+| Domain | Max acceptable age |
+|--------|-------------------|
+| AI/ML tools and frameworks | 3 months |
+| AI-adjacent architecture (agents, MCP, RAG, GenAI, LLM orchestration) | 6 months |
+| Market data, funding, company metrics | 12 months |
+| Architecture patterns, system design (classical) | 2-3 years |
+| Fundamental CS concepts, algorithms | No limit |
+
+**AI recency override for Mode 4 (Architecture/Technical)**: If the query contains keywords like "agent", "LLM", "MCP", "GenAI", "RAG", "agentic", or "prompt engineering", the recency gate tightens from 2-3 years to **6 months**. Classical architecture patterns (microservices, event sourcing, CQRS) keep the 2-3 year window.
+
+If a source fails recency for its domain, flag the claim as **uncertain** and note the date.
+
+---
+
+## Phase 5: Three-Reviewer Evaluation (parallel)
+
+After the research artifact is assembled and source-filtered, run three independent reviewers. Each reviewer has a different job and catches different failure modes.
+
+**In Claude Code**: spawn 3 parallel sub-agents.
+**In claude.ai**: run sequentially but maintain separation — complete each review fully before starting the next.
+
+### Reviewer A — Fresh Verifier (HAS VETO POWER)
+**Job**: Catch hallucinations, outdated data, single-source errors.
+**Authority**: Reviewer A has veto power over the entire pipeline. If A marks any load-bearing claim as "Contradicted," the pipeline loops back to Phase 2 for that specific claim immediately — without waiting for B or C to finish. A load-bearing claim is one that a recommendation or decision depends on.
+
+1. Extract the top 3-5 factual claims from the research artifact
+2. Run independent fresh searches for each claim
+3. Does NOT see the original sources — only the claims themselves
+4. Output per claim: **Confirmed** / **Contradicted** / **Unverifiable**
+5. If contradicted: note what the fresh search found instead
+6. If contradicted AND load-bearing: **VETO — execute the enforcement protocol below**
+
+**Veto Enforcement Protocol (mandatory in claude.ai)**:
+When a veto triggers, Claude MUST follow this exact sequence — no summarizing, no apologizing, no skipping:
+1. Output the line: `VETO TRIGGERED: Re-researching "[exact claim text]"`
+2. Immediately execute a new `web_search` for the disputed claim (different query framing than the original)
+3. Report the fresh findings with source URLs
+4. Update the confidence tag based on the new evidence
+5. Only then continue with Reviewers B and C
+
+This exists because in a linear chat interface, Claude tends to narrate contradictions instead of actually re-searching. The explicit output format forces the action.
+
+### Reviewer B — Completeness + Bias Check
+**Job**: Catch gaps, bias, untagged assumptions.
+
+1. Read the full research artifact
+2. Check mode-specific requirements are met (see Mode-Specific Checks below)
+3. Check: Are tradeoffs explicit for every recommendation?
+4. Check: Are assumptions flagged, not buried?
+5. Check: Is the contrarian view (Angle 3) present and given fair treatment?
+6. Check: Are there missing perspectives? (geographic, industry segment, company size)
+7. Output: list of gaps and bias flags
+
+### Reviewer C — Actionability Checker
+**Job**: Catch "sounds good but useless" research.
+
+1. Read the research from the perspective: "Can I make a decision from this?"
+2. Check: Are recommendations specific enough to act on?
+3. Check: Are next steps clear?
+4. Check: Are vague claims flagged? ("significant growth" without numbers = fail)
+5. Check: Is the "so what" present for **EVERY** major finding? This is mandatory, not optional. If a finding has no implication, add one or flag it as incomplete. No exceptions.
+6. Check: Would this research change behavior, or is it just interesting?
+7. **Check: Did the research honor the user's actual request?** Re-read the original query. If the user asked for "best," did the research optimize for best or for convenience? If the user said "I'm okay to travel," did the research restrict geographically anyway? If the user asked for a specific domain, did the research drift to adjacent topics? This is the "intent fidelity" check — the most common silent failure mode.
+8. Output: list of vagueness flags, missing implications, and intent-fidelity issues
+
+**Context-aware "so what" framing**: Reviewer C infers the actionability lens from two sources:
+- **The query itself**: "pro-research unit economics of quick commerce for my Coupang interview" → frame "so what" against interview preparedness
+- **User's memory context**: if Claude has memory about the user's current projects, roles, or goals, use that to sharpen the actionability check
+- **If neither provides clear context**: default to generic business decision framing ("can someone allocate budget / hire / build / pivot based on this?")
+
+This keeps the skill durable across changing priorities — the specificity comes from invocation, not from hardcoded project names.
+
+### Mode-Specific Reviewer Checks
+
+These are checked IN ADDITION to the core checks above:
+
+| Mode | Reviewer B also checks | Reviewer C also checks |
+|------|----------------------|----------------------|
+| Competitor / Design | Are decisions captured, not just features? Are gaps identified per competitor? | Can you differentiate from competitors based on this? |
+| Best Practices | Are practices ranked by consensus, not just listed? | Can you implement based on this? |
+| Market / Domain | Are numbers sourced and dated? Are assumptions called out? If unit economics sub-template active: are CAC/LTV/margins sourced, not guessed? | Can you size an opportunity from this? If unit economics active: can you model profitability? |
+| Architecture / Technical | Are failure modes covered? Are real-world examples present? | Can you pick a pattern and defend the choice? |
+
+---
+
+## Phase 6: Merge Evaluations + Decision Gate
+
+Reviewer outputs are merged **hierarchically, not equally**. Truth (A) outranks completeness (B) outranks usefulness (C). A factual contradiction is categorically different from a gap or a vagueness flag.
+
+### Step 1: Apply Reviewer A's verdicts first (truth layer)
+
+Update confidence tags based on verification results:
+- Claim was "verified" but A says "Contradicted" → downgrade to **contradicted**, trigger tie-breaker
+- Claim was "likely" but A says "Confirmed" → upgrade to **verified**
+- Claim was "likely" but A says "Unverifiable" → keep as **uncertain**, add note
+
+**Tie-Breaker Protocol** (when Reviewer A contradicts the original research):
+1. Run a fresh search specifically designed to find a **third independent source** on the disputed claim
+2. If the third source confirms Reviewer A → original claim is overwritten, tagged **contradicted**
+3. If the third source confirms the original research → claim stands as **likely** (not "verified"), with A's contradiction noted as a dissenting data point
+4. If no third source exists → claim drops to **uncertain**, both perspectives documented
+5. Never deliver research with an unresolved contradiction on a load-bearing claim
+
+### Step 2: Apply Reviewer B's flags (completeness layer)
+
+Add gap flags as inline annotations (e.g., `[GAP: No contrarian view on this claim]`). These do not override A's verdicts.
+
+### Step 3: Apply Reviewer C's flags (actionability layer)
+
+Add vagueness flags as inline annotations (e.g., `[VAGUE: "significant growth" — needs numbers]`). These do not override A or B.
+
+### Decision Gate
+- If any **load-bearing claims** are tagged **contradicted** after tie-breaker: STOP. The veto holds — re-research from Phase 2 for those claims.
+- If >30% of claims are tagged **uncertain**: flag to the user that research quality is low and additional sources may be needed.
+- Otherwise: proceed to final artifact.
+
+---
+
+## Phase 7: Deliver Final Output
+
+### Output Mode Detection
+
+The skill has two output modes. Detect which one to use:
+
+| Signal in query | Output mode |
+|----------------|-------------|
+| No special signal (default) | **Chat mode** |
+| "use pro-research + pro-presentations", "use pro-research + pro-documents", or any composition with another skill | **Chat mode** (the companion skill handles its own format) |
+| "for Claude Code", "for project-setup", "save as research.md", "save as competitor-analysis.md", or explicit file request | **File mode** |
+
+### Chat Mode (default)
+
+The skill is **invisible**. The output looks and feels like a normal Claude conversation — same tone, same formatting, same flow. The only difference is the content is better researched, better sourced, and more trustworthy.
+
+Rules:
+- **No special formatting.** No "Research Metadata" headers, no "Practice #1" numbering, no "Reviewer Annotations" sections. These are internal pipeline artifacts — they do not appear in the output.
+- **Confidence woven into prose.** Say "this is well-established across Anthropic's docs and multiple practitioners" instead of "[VERIFIED]". Say "one practitioner reports, though this hasn't been independently replicated" instead of "[LIKELY]".
+- **Sources mentioned naturally.** Say "Anthropic's engineering team notes that..." or "according to the 30 Best Bars India 2025 rankings..." — not a source table at the end.
+- **Contrarian views as natural caveats.** Say "though it's worth noting that..." or "the counterargument is..." — not a dedicated "Contrarian" section.
+- **"So what" on every finding.** Every claim should be followed by its implication — what it means for the user's decision.
+- **Research boundaries mentioned if relevant.** If the research has known gaps, mention them naturally ("I couldn't find reliable data on X, so this recommendation is based on Y").
+
+The user can then have a normal follow-up conversation — asking questions, challenging claims, iterating. The full research context remains in conversation history. If the user later invokes pro-presentations or pro-documents in the same conversation, the companion skill uses the conversation history directly. No reformatting step is needed.
+
+### File Mode (only when explicitly requested)
+
+Produce a structured .md file optimized for **Claude Code consumption**, not human reading. The file name matches what the consuming workflow needs (research.md, competitor-analysis.md, market-analysis.md, etc.).
+
+Rules:
+- **Exhaustive.** Include everything the pipeline produced. Length scales with topic complexity — no artificial constraints. A narrow topic might produce 2 pages, a broad competitive landscape might produce 10. Every paragraph earns its place with signal.
+- **Structured for Claude Code.** Clear section headers so Claude Code can search for specific sections. Inline confidence markers as parseable tags: `[VERIFIED]`, `[LIKELY]`, `[UNCERTAIN]`, `[CONTRADICTED]`. Reviewer flags inline next to the claims they apply to: `[GAP: ...]`, `[VAGUE: ...]`.
+- **Follow the user's Context Engineering Framework conventions** if composing with project-setup: Decided/Open classification, cross-references to downstream files (COMPETITOR.md, CONTEXT.md, DATA_MODEL.md).
+- **Research Boundaries section** at the end: what this research does NOT cover, so Claude Code knows the limits.
+- **No narrative prose.** Claim → Evidence → Confidence → Implication. That's it.
+
+### Anti-Boxing Clause (active in both modes)
+- Speculation is labeled as speculation
+- Facts are sourced
+- Claude's own reasoning is distinguished from sourced claims
+- "I don't know" is an acceptable answer for specific claims — always preferred over fabrication
+
+---
+
+## Integration Hooks (User-Composed, Not Auto-Called)
+
+This skill is **never auto-triggered by other skills**. The user composes skills manually when they want the full research pipeline. This avoids adding latency to normal skill usage.
+
+**How to compose**: The user invokes pro-research alongside another skill (e.g., "use pro-research + pro-presentations to build a strategy deck on X"). Pro-research runs first and produces conversational output in chat. The companion skill then uses the conversation history as its input.
+
+**The consuming skill dictates the output format, not pro-research.** When composed with project-setup, the output becomes COMPETITOR.md / CONTEXT.md / DATA_MODEL.md in the format project-setup expects. When composed with pro-presentations, the presentation skill reads the research from conversation history and builds the deck. Pro-research is a quality engine — how the research gets packaged is the consuming skill's job.
+
+**Same-conversation presentation workflow**: The user can also research first, have a conversation about the findings, and THEN invoke pro-presentations. The research and follow-up discussion are all in conversation history. The presentation is built from the iterated version, which is better because user feedback refined the research before it became slides.
+
+**Common compositions**:
+
+| User composes | What happens | Pro-research mode used |
+|--------------|-------------|----------------------|
+| pro-research + project-setup | Research feeds into COMPETITOR.md, CONTEXT.md, DATA_MODEL.md | Competitor, Best Practices, or Architecture |
+| pro-research + pro-presentations | Verified data feeds into Strategy/Pitch/Board decks | Market / Domain or Best Practices |
+| pro-research + design-research | Verified competitor UI/UX analysis feeds into design direction | Competitor / Design |
+
+---
+
+## Anti-Patterns (Things to NEVER Do)
+
+### Research Quality
+- ❌ Presenting claims without confidence tags
+- ❌ Using a single source as the basis for a recommendation
+- ❌ Treating all sources as equally credible
+- ❌ Omitting the contrarian angle to make research "cleaner"
+- ❌ Burying assumptions inside claims instead of flagging them explicitly
+- ❌ Using outdated data without flagging the date
+
+### Presentation
+- ❌ Wall of URLs without quality context
+- ❌ Vague claims: "significant growth", "widely adopted", "best-in-class"
+- ❌ Recommendations without "so what" — every finding needs an implication
+- ❌ Listing features without the decisions behind them (Competitor mode)
+- ❌ Listing practices without ranking by consensus (Best Practices mode)
+
+### Process
+- ❌ Auto-triggering on general research queries without explicit user invocation
+- ❌ Skipping the three-reviewer evaluation to save time
+- ❌ Running all three angles from the same search query
+- ❌ Marking claims as "verified" without actual multi-source confirmation
+- ❌ Delivering research with contradicted load-bearing claims without tie-breaker resolution
+- ❌ Treating Reviewer A, B, and C outputs as equal weight — A (truth) always outranks B (completeness) outranks C (usefulness)
+- ❌ Recommending any entity (product, tool, company, service) without verifying it currently exists and is operational
+- ❌ Starting research from review sites and blogs instead of authoritative rankings and official sources
+- ❌ Substituting the user's actual request with a more convenient optimization (e.g., user asks for "best" and research optimizes for "nearest")
+
+### Output Format
+- ❌ Producing "Research Metadata" headers, numbered practice formats, or reviewer annotation sections in chat mode — the skill must be invisible
+- ❌ Creating a file when the user didn't ask for one
+- ❌ Using formal confidence tags like `[VERIFIED]` in chat — weave confidence into natural prose
+- ❌ Omitting "so what" on any finding — every claim must have an implication
+- ❌ Artificially constraining file output length — the file scales with topic complexity
+
+---
+
+## Pipeline Summary
+
+| Phase | What happens | Agent calls |
+|-------|-------------|-------------|
+| 1. Detect Mode | Classify query into 1 of 4 modes | 0 |
+| 2. Multi-Angle Research | 3 parallel searches (official, practitioner, contrarian) | 3 |
+| 3. Consolidate | Merge into mode-specific artifact with confidence tags | 1 |
+| 4. Source Quality Filter | Audit sources, apply recency gates, adjust confidence | 1 |
+| 5. Three-Reviewer Eval | Fresh verification (with veto) + completeness + actionability | 3 |
+| 6. Merge + Gate | Hierarchical merge (A→B→C), tie-breaker if needed | 1-2 |
+| 7. Deliver | Final artifact with all tags and annotations | 0 |
+| **Total** | | **~9-10 calls** |
+
+Estimated time: 2-4 minutes in claude.ai | ~1 minute in Claude Code (parallel execution). Add ~30 seconds if tie-breaker protocol activates.
