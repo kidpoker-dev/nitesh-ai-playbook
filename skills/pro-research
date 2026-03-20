@@ -64,6 +64,15 @@ Every research query gets investigated from three independent angles. This is no
 **Mandatory Current-Status Verification (all modes)**:
 Before recommending, citing, or including ANY entity (product, company, tool, framework, service, venue) in the research output, verify it is currently operational. Run a quick search: "[entity name] shut down / discontinued / deprecated / closed / acquired 2025 2026". If the entity no longer exists or has fundamentally changed, exclude it from recommendations and note what replaced it. This applies to every mode — a deprecated framework is the same class of error as a closed restaurant.
 
+**Mandatory Locale Verification (when query specifies a geography)**:
+When the user's query mentions or implies a specific country or region (India, SE Asia, Europe, Japan, etc.), at least one search per angle MUST include locale-specific terms. This means:
+- For products: search "[product] price [country] [year]" or check the country-specific Amazon/e-commerce site, not the US listing
+- For companies: search "[company] [country] operations / presence / availability"
+- For market data: search for reports that segment by the requested geography, not global aggregates
+- For regulations: search "[regulation] [country]" specifically
+
+**Why this exists**: The most common factual error in geo-specific queries is applying global (usually US) data to a local market. A $500 US product might be ₹90,000 in India (not ₹42,000 via simple conversion) due to import duties, local pricing, and distribution costs. A global market report might say "$14B" but the India slice might be 3% of that. Locale-specific sourcing catches these errors at the research stage rather than leaving them for reviewers.
+
 ---
 
 ## Phase 3: Consolidate into Research Artifact
@@ -193,6 +202,16 @@ After consolidation, audit every source used in the artifact.
 
 If a source fails recency for its domain, flag the claim as **uncertain** and note the date.
 
+### Numbers Gate (mandatory for all modes)
+
+After source filtering, extract every quantitative claim in the consolidated artifact: prices, market sizes, growth rates, percentages, user counts, revenue figures, headcounts, dates. For each number:
+
+1. **Verify against a locale-specific source.** If the query mentions a geography (India, SE Asia, Europe, etc.), the number must be confirmed from a source in that locale — not converted from USD or global figures. Search "[product/entity] price [country] [year]" or "[metric] [country] [source]" explicitly. A ₹50K price tag guessed from a $500 USD listing is a factual error, not an approximation.
+2. **Flag unverifiable numbers.** If a number can't be confirmed from a second source, tag it as **uncertain** with the single source noted. Never present an unverified number as fact.
+3. **Cross-check outliers.** If a number is significantly different from what similar entities report (e.g., market size estimates that vary 2x across reports), note the range and explain why estimates diverge. Don't pick the most convenient number.
+
+This gate exists because pipeline complexity can cause the model to shortcut individual fact-checking while focusing on structural compliance. Wrong numbers destroy credibility faster than missing contrarian angles.
+
 ---
 
 ## Phase 5: Three-Reviewer Evaluation (parallel)
@@ -206,8 +225,8 @@ After the research artifact is assembled and source-filtered, run three independ
 **Job**: Catch hallucinations, outdated data, single-source errors.
 **Authority**: Reviewer A has veto power over the entire pipeline. If A marks any load-bearing claim as "Contradicted," the pipeline loops back to Phase 2 for that specific claim immediately — without waiting for B or C to finish. A load-bearing claim is one that a recommendation or decision depends on.
 
-1. Extract the top 3-5 factual claims from the research artifact
-2. Run independent fresh searches for each claim
+1. Extract the top 3-5 factual claims from the research artifact. **This MUST include at least one pricing or quantitative claim if the output contains any.** Reviewer A's scope is not limited to analytical claims — a wrong price, market size, or stat is just as damaging to credibility as a wrong trend analysis. Specifically: any claim involving money (prices, revenue, funding), percentages, counts, or growth rates should be prioritized for verification.
+2. Run independent fresh searches for each claim. **For pricing claims, search with locale-specific terms** (e.g., "[product] price India Amazon.in 2026", "[product] price [country]"). Never verify an India price against a US source.
 3. Does NOT see the original sources — only the claims themselves
 4. Output per claim: **Confirmed** / **Contradicted** / **Unverifiable**
 5. If contradicted: note what the fresh search found instead
@@ -424,3 +443,15 @@ This skill is **never auto-triggered by other skills**. The user composes skills
 | **Total** | | **~9-10 calls** |
 
 Estimated time: 2-4 minutes in claude.ai | ~1 minute in Claude Code (parallel execution). Add ~30 seconds if tie-breaker protocol activates.
+
+### Claude.ai Accuracy-First Rule
+
+When running the full pipeline sequentially in claude.ai (no sub-agents), the model is managing mode detection, 3-angle research, consolidation, source filtering, three reviewers, and delivery in a single context window. This creates a **throughput bias** — the temptation to rush individual fact-checking in order to complete all pipeline phases.
+
+**The rule: Factual accuracy always outranks pipeline completeness.**
+
+A response with correct facts and a missing contrarian angle is better than a response with perfect structure and wrong numbers. If you're running low on context or attention budget:
+1. **Never skip the Numbers Gate.** Every price, stat, and quantitative claim must be verified. This is the most common failure mode on claude.ai.
+2. **Reviewer A's quantitative checks are mandatory.** Reviewers B and C can be abbreviated if needed.
+3. **It's acceptable to flag a section as "needs deeper research" rather than fabricate or estimate.** Users trust honesty about gaps more than confidently wrong numbers.
+4. **For consumer/comparison queries** (products, watches, restaurants, hotels) — the skill's full pipeline may be heavier than needed. Consider whether 2-3 thorough searches with careful fact-checking would serve the user better than 9 searches with less attention per fact. The pipeline exists to improve quality, not to be followed ritualistically when it's degrading accuracy.
