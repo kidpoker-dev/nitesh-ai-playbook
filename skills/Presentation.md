@@ -40,7 +40,7 @@ This applies to ALL modes, every single time. No exceptions.
 
 ❌ NEVER use topic titles:
 - "Market Overview"
-- "Project Architecture"  
+- "Project Architecture"
 - "Key Findings"
 - "Next Steps"
 - "About Me"
@@ -51,6 +51,8 @@ This applies to ALL modes, every single time. No exceptions.
 - "Three architectural choices made this system 10x faster than the initial approach"
 - "We need to decide on pricing model before the March launch"
 - "I automated my entire Spotify library in one weekend using Claude + n8n"
+
+**Exception**: In Pitch/Fundraise mode, the cover slide may use the company name (and optional tagline) as the title. This is standard investor deck practice and does not violate the action title rule.
 
 **The test**: Read only the titles of all slides in sequence. They should tell a complete, coherent story on their own. If someone reads just the titles and skips everything else, they should understand your main message.
 
@@ -72,6 +74,10 @@ Typical 6-10 slides:
 6. **Results/Demo**: What happened — metrics, screenshots, before/after
 7. **Lessons Learned**: What surprised you, what you'd do differently
 8. **What's Next** (optional): Future plans or open questions
+
+For project walkthroughs, include a **before/after slide** showing the transformation. This is often the most powerful slide in an Explain deck — "messy Spotify library" vs "organized playlists," "manual process" vs "automated dashboard." If screenshots aren't available, use a side-by-side text description with clear visual contrast.
+
+When audience is non-technical (triggered by "friend," "non-technical," "beginner"), **translate ALL technical terms on first use**. Pattern: "Flask (a tiny web server running on the Pi)" or "mDNS (a system that gives devices friendly names instead of numbers)." If a term can't be explained in parentheses, replace it with the plain-language version entirely.
 
 Design: Casual, visual, use screenshots and diagrams. Lighter color palette. Conversational tone.
 
@@ -181,10 +187,13 @@ Design: Minimal, content-dense. Function over form. Clear headings, scannable st
 - Process flow (horizontal steps)
 - Quote or testimonial highlight
 
+For decks with 10+ slides, write out the planned layout sequence before building and verify no consecutive repeats. When two slides both need dense content (tables, comparisons), insert a visual break between them — a big number callout, quote highlight, or full-width diagram.
+
 ### Content Density
-- **Max 5 bullet points per slide** (prefer 3)
+- **Standard text slides**: Max 40 words body text, max 5 bullet points (prefer 3)
+- **Structured layouts** (card grids, comparison columns, icon rows, team bios, data tables): Max 70 words total, each card/cell under 20 words, no single text block over 40 words
+- **ANY slide over 90 words must be split** regardless of layout type
 - Each bullet is **1-2 sentences**, not a paragraph
-- If a slide has >40 words of body text, split it into two slides
 - **One idea per slide** — if you need "and" in the title, it's probably two slides
 
 ### Visual Hierarchy
@@ -200,7 +209,7 @@ Design: Minimal, content-dense. Function over form. Clear headings, scannable st
 - Pie/donut: Parts of a whole (max 5 segments)
 - Big number callout: When one stat tells the story
 - Table: When exact values matter more than patterns
-- **ALWAYS annotate charts** — add a callout or highlight pointing to the insight
+- **EVERY chart, table, or framework MUST have a "Key Insight" annotation** — a callout box, highlighted cell, or bold caption that says "Here is what to see in this data." A chart without annotation is like a slide without a title — it forces the reader to do the interpretation work. If you can't articulate the key insight, the exhibit isn't ready.
 - **NEVER show a chart without explaining what to see in it**
 
 ---
@@ -210,7 +219,7 @@ Design: Minimal, content-dense. Function over form. Clear headings, scannable st
 ### Structural
 - ❌ Topic titles ("Market Overview") instead of action titles
 - ❌ Same layout repeated on 3+ consecutive slides
-- ❌ Wall of text (>6 bullets or >50 words body text)
+- ❌ Wall of text (>6 bullets or >90 words body text on any single slide)
 - ❌ Slides that could be reordered without losing narrative flow
 - ❌ Ending with "Thank You" or "Questions?" — end with a takeaway or call-to-action
 - ❌ Using TAM/SAM/SOM, business models, or financials when not asked for a pitch deck
@@ -260,15 +269,15 @@ After generating all slide content, run these checks across the full deck before
 **Anti-pattern scan (binary pass/fail per slide):**
 - Does any slide use a topic title instead of an action title? (Re-check — titles can drift during content generation)
 - Do any two consecutive slides use the same layout type?
-- Does any slide have more than 5 bullet points?
-- Does any slide have body text exceeding 40 words?
+- Does any standard text slide have more than 5 bullet points?
+- Does any standard text slide have body text exceeding 40 words? Does any structured layout slide exceed 70 words total?
 - Does the last slide end with "Thank You" or "Questions?" instead of a takeaway?
 - Are there accent underlines below any title?
 - Is body text center-aligned anywhere?
 
 **Content density check (per slide):**
-- Count bullets: flag any slide exceeding 5
-- Count body text words: flag any slide exceeding 40 words
+- Count bullets: flag any standard text slide exceeding 5
+- Count body text words: flag standard text slides exceeding 40 words, structured layouts exceeding 70 words, ANY slide exceeding 90 words
 - Check if any slide has fewer than 15 words of body content (too thin — may need merging with adjacent slide)
 
 **If any check fails:** Fix the specific slide before presenting. One fix can create another issue (e.g., splitting an overloaded slide may create a layout repeat), so re-check affected slides after each fix.
@@ -280,7 +289,7 @@ After generating all slide content, run these checks across the full deck before
 User says... → Use this mode:
 - "make a presentation about my project" → **Explain**
 - "pitch deck for investors" → **Pitch/Fundraise**
-- "quarterly board update" → **Board/Executive**  
+- "quarterly board update" → **Board/Executive**
 - "analyze whether we should enter market X" → **Strategy/Analysis**
 - "create training slides on topic X" → **Teach/Workshop**
 - "document my workflow for reference" → **Personal Notes**
